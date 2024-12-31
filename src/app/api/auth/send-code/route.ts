@@ -5,7 +5,7 @@ import { sendVerificationToken } from "@/lib/sms";
 
 const prisma = new PrismaClient();
 
-// 입력 데이터 검증을 위한 스키마
+// trigger
 const phoneSchema = z.object({
   phone: z.string(),
 });
