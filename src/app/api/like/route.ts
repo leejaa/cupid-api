@@ -110,12 +110,21 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({ success: true, like });
+    return new NextResponse(JSON.stringify({ success: true, like }), {
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+      },
+    });
   } catch (error) {
     console.error("Like API Error:", error);
-    return NextResponse.json(
-      { error: "서버 오류가 발생했습니다." },
-      { status: 500 }
+    return new NextResponse(
+      JSON.stringify({ error: "서버 오류가 발생했습니다." }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+        },
+      }
     );
   }
 }
