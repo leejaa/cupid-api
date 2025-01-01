@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { SignJWT } from "jose";
-import { getJwtSecretKey } from "@/lib/auth";
 import { verifyToken } from "@/lib/sms";
+import { getJwtSecretKey } from "@/lib/auth";
 
 const prisma = new PrismaClient();
 
