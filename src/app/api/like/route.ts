@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     }
 
     const payload = await verifyToken(token);
-    const { phone: rawPhone } = await req.json();
+    const { phone: rawPhone, name } = await req.json();
 
     if (!rawPhone) {
       return NextResponse.json(
@@ -50,8 +50,15 @@ export async function POST(req: Request) {
       toUser = await prisma.user.create({
         data: {
           phone: formattedPhone,
+          name: name || null,
           isRegistered: false,
         },
+      });
+    } else if (name && !toUser.name) {
+      // 기존 사용자가 있고, 이름이 없는 경우에만 이름 업데이트
+      toUser = await prisma.user.update({
+        where: { id: toUser.id },
+        data: { name },
       });
     }
 
