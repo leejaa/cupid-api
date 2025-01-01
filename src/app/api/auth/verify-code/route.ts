@@ -4,6 +4,7 @@ import { z } from "zod";
 import { SignJWT } from "jose";
 import { verifyToken } from "@/lib/sms";
 import { getJwtSecretKey } from "@/lib/auth";
+import { normalizePhoneNumber } from "@/lib/phone";
 
 const prisma = new PrismaClient();
 
@@ -15,17 +16,22 @@ const verifySchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { phone, code } = verifySchema.parse(body);
+    const { phone: rawPhone, code } = verifySchema.parse(body);
+    const phone = normalizePhoneNumber(rawPhone);
 
-    const user = await prisma.user.findUnique({
+    // 사용자 찾기 또는 생성
+    let user = await prisma.user.findUnique({
       where: { phone },
     });
 
+    // 사용자가 없으면 새로 생성
     if (!user) {
-      return NextResponse.json(
-        { success: false, message: "사용자를 찾을 수 없습니다." },
-        { status: 404 }
-      );
+      user = await prisma.user.create({
+        data: {
+          phone,
+          isRegistered: false,
+        },
+      });
     }
 
     try {
@@ -37,6 +43,11 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
+
+      await prisma.user.update({
+        where: { phone },
+        data: { isRegistered: true },
+      });
     } catch (error) {
       console.error("인증 코드 확인 오류:", error);
       return NextResponse.json(

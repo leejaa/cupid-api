@@ -3,13 +3,7 @@ import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
 import { add } from "date-fns";
-
-function formatKoreanPhoneNumber(phone: string): string {
-  if (phone.startsWith("010")) {
-    return `+82${phone.slice(1)}`; // 010을 +82로 변환
-  }
-  return phone;
-}
+import { formatKoreanPhoneNumber } from "@/lib/phone";
 
 export async function POST(req: Request) {
   try {
@@ -23,16 +17,16 @@ export async function POST(req: Request) {
     }
 
     const payload = await verifyToken(token);
-    const { phone } = await req.json();
+    const { phone: rawPhone } = await req.json();
 
-    if (!phone) {
+    if (!rawPhone) {
       return NextResponse.json(
         { error: "전화번호가 필요합니다." },
         { status: 400 }
       );
     }
 
-    const formattedPhone = formatKoreanPhoneNumber(phone);
+    const formattedPhone = formatKoreanPhoneNumber(rawPhone);
 
     // 토큰에서 추출한 사용자 확인
     const fromUser = await prisma.user.findUnique({
@@ -47,15 +41,18 @@ export async function POST(req: Request) {
     }
 
     // 좋아요를 받을 사용자 확인
-    const toUser = await prisma.user.findUnique({
+    let toUser = await prisma.user.findUnique({
       where: { phone: formattedPhone },
     });
 
+    // 대상 사용자가 없으면 새로 생성
     if (!toUser) {
-      return NextResponse.json(
-        { error: "대상 사용자를 찾을 수 없습니다." },
-        { status: 404 }
-      );
+      toUser = await prisma.user.create({
+        data: {
+          phone: formattedPhone,
+          isRegistered: false,
+        },
+      });
     }
 
     // 자기 자신에게 좋아요를 할 수 없음

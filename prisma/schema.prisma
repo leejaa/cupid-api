@@ -18,6 +18,7 @@ model User {
   id            String   @id @default(cuid())
   phone         String   @unique
   name          String?
+  isRegistered  Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   givenLikes    Like[]   @relation("FromUser")
