@@ -1,17 +1,14 @@
-import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
+import { apiResponse, errorResponse } from "@/lib/api";
 
 export async function GET() {
   try {
     const headersList = await headers();
     const token = headersList.get("authorization")?.split(" ")[1];
     if (!token) {
-      return NextResponse.json(
-        { error: "인증이 필요합니다." },
-        { status: 401 }
-      );
+      return errorResponse("인증이 필요합니다.", 401);
     }
 
     const payload = await verifyToken(token);
@@ -38,10 +35,10 @@ export async function GET() {
     });
 
     if (!activeLike) {
-      return NextResponse.json({ liked: null });
+      return apiResponse({ liked: null });
     }
 
-    return NextResponse.json({
+    return apiResponse({
       liked: {
         id: activeLike.id,
         createdAt: activeLike.createdAt,
@@ -50,9 +47,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Liked User API Error:", error);
-    return NextResponse.json(
-      { error: "서버 오류가 발생했습니다." },
-      { status: 500 }
-    );
+    return errorResponse("서버 오류가 발생했습니다.", 500);
   }
 }

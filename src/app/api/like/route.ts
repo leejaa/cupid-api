@@ -1,29 +1,23 @@
-import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
 import { add } from "date-fns";
 import { formatKoreanPhoneNumber } from "@/lib/phone";
+import { apiResponse, errorResponse } from "@/lib/api";
 
 export async function POST(req: Request) {
   try {
     const headersList = await headers();
     const token = headersList.get("authorization")?.split(" ")[1];
     if (!token) {
-      return NextResponse.json(
-        { error: "인증이 필요합니다." },
-        { status: 401 }
-      );
+      return errorResponse("인증이 필요합니다.", 401);
     }
 
     const payload = await verifyToken(token);
     const { phone: rawPhone, name } = await req.json();
 
     if (!rawPhone) {
-      return NextResponse.json(
-        { error: "전화번호가 필요합니다." },
-        { status: 400 }
-      );
+      return errorResponse("전화번호가 필요합니다.", 400);
     }
 
     const formattedPhone = formatKoreanPhoneNumber(rawPhone);
@@ -34,10 +28,7 @@ export async function POST(req: Request) {
     });
 
     if (!fromUser) {
-      return NextResponse.json(
-        { error: "사용자를 찾을 수 없습니다." },
-        { status: 404 }
-      );
+      return errorResponse("사용자를 찾을 수 없습니다.", 404);
     }
 
     // 좋아요를 받을 사용자 확인
@@ -47,6 +38,7 @@ export async function POST(req: Request) {
 
     // 대상 사용자가 없으면 새로 생성
     if (!toUser) {
+      console.log("create user");
       toUser = await prisma.user.create({
         data: {
           phone: formattedPhone,
@@ -55,6 +47,7 @@ export async function POST(req: Request) {
         },
       });
     } else if (name && !toUser.name) {
+      console.log("update user");
       // 기존 사용자가 있고, 이름이 없는 경우에만 이름 업데이트
       toUser = await prisma.user.update({
         where: { id: toUser.id },
@@ -64,10 +57,7 @@ export async function POST(req: Request) {
 
     // 자기 자신에게 좋아요를 할 수 없음
     if (fromUser.id === toUser.id) {
-      return NextResponse.json(
-        { error: "자기 자신에게 좋아요를 할 수 없습니다." },
-        { status: 400 }
-      );
+      return errorResponse("자기 자신에게 좋아요를 할 수 없습니다.", 400);
     }
 
     // 24시간 이내에 좋아요를 한 적이 있는지 확인
@@ -85,9 +75,9 @@ export async function POST(req: Request) {
     });
 
     if (existingLike) {
-      return NextResponse.json(
-        { error: "24시간 이내에 이미 다른 사용자에게 좋아요를 했습니다." },
-        { status: 400 }
+      return errorResponse(
+        "24시간 이내에 이미 다른 사용자에게 좋아요를 했습니다.",
+        400
       );
     }
 
@@ -110,21 +100,9 @@ export async function POST(req: Request) {
       },
     });
 
-    return new NextResponse(JSON.stringify({ success: true, like }), {
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-    });
+    return apiResponse({ success: true, like });
   } catch (error) {
     console.error("Like API Error:", error);
-    return new NextResponse(
-      JSON.stringify({ error: "서버 오류가 발생했습니다." }),
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-      }
-    );
+    return errorResponse("서버 오류가 발생했습니다.", 500);
   }
 }

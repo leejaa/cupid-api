@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { SignJWT } from "jose";
 import { verifyToken } from "@/lib/sms";
 import { getJwtSecretKey } from "@/lib/auth";
+import { apiResponse, errorResponse } from "@/lib/api";
 import { normalizePhoneNumber } from "@/lib/phone";
 
 const prisma = new PrismaClient();
@@ -19,29 +20,19 @@ export async function POST(req: NextRequest) {
     const { phone: rawPhone, code } = verifySchema.parse(body);
     const phone = normalizePhoneNumber(rawPhone);
 
-    // 사용자 찾기 또는 생성
-    let user = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { phone },
     });
 
-    // 사용자가 없으면 새로 생성
     if (!user) {
-      user = await prisma.user.create({
-        data: {
-          phone,
-          isRegistered: false,
-        },
-      });
+      return errorResponse("사용자를 찾을 수 없습니다.", 404);
     }
 
     try {
       const verification = await verifyToken(phone, code);
 
       if (!verification.valid) {
-        return NextResponse.json(
-          { success: false, message: "잘못된 인증번호입니다." },
-          { status: 400 }
-        );
+        return errorResponse("잘못된 인증번호입니다.", 400);
       }
 
       await prisma.user.update({
@@ -50,15 +41,11 @@ export async function POST(req: NextRequest) {
       });
     } catch (error) {
       console.error("인증 코드 확인 오류:", error);
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            error instanceof Error
-              ? error.message
-              : "인증 코드 확인에 실패했습니다.",
-        },
-        { status: 500 }
+      return errorResponse(
+        error instanceof Error
+          ? error.message
+          : "인증 코드 확인에 실패했습니다.",
+        500
       );
     }
 
@@ -69,23 +56,17 @@ export async function POST(req: NextRequest) {
       .setExpirationTime("1y")
       .sign(new TextEncoder().encode(getJwtSecretKey()));
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       message: "인증이 완료되었습니다.",
       token,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, message: error.errors[0].message },
-        { status: 400 }
-      );
+      return errorResponse(error.errors[0].message, 400);
     }
 
     console.error("Error in verify-code:", error);
-    return NextResponse.json(
-      { success: false, message: "서버 오류가 발생했습니다." },
-      { status: 500 }
-    );
+    return errorResponse("서버 오류가 발생했습니다.", 500);
   }
 }
