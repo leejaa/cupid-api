@@ -15,27 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - uses: pnpm/action-setup@v2
-        name: Install pnpm
-        with:
-          version: 8
-
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
-      - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=production --token=BCAKlynghBaH6oNRIAH5fplL
-
-      - name: Build Project Artifacts
-        run: vercel build --prod --token=BCAKlynghBaH6oNRIAH5fplL
-
-      - name: Deploy Project Artifacts to Vercel
-        run: vercel deploy --prebuilt --prod --token=BCAKlynghBaH6oNRIAH5fplL
+      - name: Deploy to Vercel
+        run: |
+          vercel deploy --prod \
+            --token=BCAKlynghBaH6oNRIAH5fplL \
+            --yes
