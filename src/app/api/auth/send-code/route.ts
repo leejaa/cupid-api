@@ -5,7 +5,7 @@ import { sendVerificationToken } from "@/lib/sms";
 
 const prisma = new PrismaClient();
 
-// trigger
+// trigger..
 const phoneSchema = z.object({
   phone: z.string(),
 });
