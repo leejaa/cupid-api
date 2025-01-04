@@ -75,7 +75,7 @@ export async function GET() {
         usersWithNotification.map((user) => user.id),
         {
           title: "오늘의 퀴즈",
-          body: "오늘의 퀴즈가 도착했습니다. 지금 확인해보세요!",
+          body: selectedQuiz.question,
           data: {
             type: "daily-quiz",
             quizId: selectedQuiz.id,
