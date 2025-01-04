@@ -15,15 +15,17 @@ datasource db {
 }
 
 model User {
-  id            String        @id @default(cuid())
-  phone         String        @unique
-  name          String?
-  isRegistered  Boolean       @default(false)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  givenLikes    Like[]        @relation("FromUser")
-  receivedLikes Like[]        @relation("ToUser")
-  notification  Notification?
+  id               String        @id @default(cuid())
+  phone            String        @unique
+  name             String?
+  isRegistered     Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  givenLikes       Like[]        @relation("FromUser")
+  receivedLikes    Like[]        @relation("ToUser")
+  notification     Notification?
+  givenQuizLogs    QuizLog[]     @relation("QuizFromUser")
+  receivedQuizLogs QuizLog[]     @relation("QuizToUser")
 }
 
 model Notification {
@@ -46,4 +48,25 @@ model Like {
   deletedAt DateTime?
 
   @@unique([fromId, toId, createdAt])
+}
+
+model Quiz {
+  id        String    @id @default(cuid())
+  question  String
+  showedAt  DateTime?
+  quizLogs  QuizLog[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model QuizLog {
+  id        String   @id @default(cuid())
+  quiz      Quiz     @relation(fields: [quizId], references: [id])
+  quizId    String
+  fromUser  User     @relation("QuizFromUser", fields: [fromId], references: [id])
+  fromId    String
+  toUser    User     @relation("QuizToUser", fields: [toId], references: [id])
+  toId      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

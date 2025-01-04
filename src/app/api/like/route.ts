@@ -4,6 +4,7 @@ import { verifyToken } from "@/lib/auth";
 import { add } from "date-fns";
 import { formatKoreanPhoneNumber } from "@/lib/phone";
 import { apiResponse, errorResponse } from "@/lib/api";
+import { notificationService } from "@/lib/services/notification";
 
 export async function POST(req: Request) {
   try {
@@ -99,6 +100,23 @@ export async function POST(req: Request) {
         toId: toUser.id,
       },
     });
+
+    // 좋아요를 받은 사용자에게 푸시 알림 전송
+    try {
+      await notificationService.sendToUser(toUser.id, {
+        title: "새로운 호감 표시",
+        body: "누군가가 회원님에게 호감을 표시했습니다.",
+        data: {
+          type: "like",
+          fromUserId: fromUser.id,
+          likeId: like.id,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      // 알림 전송 실패는 좋아요 생성에 영향을 주지 않도록 함
+      console.error("Failed to send like notification:", error);
+    }
 
     return apiResponse({ success: true, like });
   } catch (error) {
