@@ -19,6 +19,7 @@ model User {
   phone         String   @unique
   name          String?
   isRegistered  Boolean  @default(false)
+  fcmToken      String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   givenLikes    Like[]   @relation("FromUser")
