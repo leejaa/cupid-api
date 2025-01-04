@@ -131,36 +131,22 @@ export class NotificationService {
         return;
       }
 
-      const accessToken = await this.getAccessToken();
-
-      // FCM 대량 발송 API 사용
-      const response = await fetch(
-        `https://fcm.googleapis.com/v1/projects/${this.PROJECT_ID}/messages:send`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({
-            message: {
-              tokens: tokens,
-              notification: {
-                title: payload.title,
-                body: payload.body,
-              },
-              data: payload.data || {},
-            },
-          }),
-        }
+      // 각 토큰에 대해 개별적으로 메시지 전송
+      const results = await Promise.all(
+        tokens.map(async (token) => {
+          try {
+            return await this.sendToToken(token, payload);
+          } catch (error) {
+            console.error(
+              `Failed to send notification to token ${token}:`,
+              error
+            );
+            return null;
+          }
+        })
       );
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(`FCM Batch API Error: ${JSON.stringify(error)}`);
-      }
-
-      return response.json();
+      return results.filter(Boolean);
     } catch (error) {
       console.error("Failed to send batch notifications:", error);
       throw error;
