@@ -109,6 +109,63 @@ export class NotificationService {
 
     return response.json();
   }
+
+  async sendToMultipleUsers(userIds: string[], payload: NotificationPayload) {
+    try {
+      // 여러 사용자의 FCM 토큰 한 번에 조회
+      const notifications = await prisma.notification.findMany({
+        where: {
+          userId: { in: userIds },
+          isEnabled: true,
+        },
+        select: {
+          token: true,
+        },
+      });
+
+      const tokens = notifications
+        .filter((n): n is { token: string } => n.token !== null)
+        .map((n) => n.token);
+
+      if (tokens.length === 0) {
+        return;
+      }
+
+      const accessToken = await this.getAccessToken();
+
+      // FCM 대량 발송 API 사용
+      const response = await fetch(
+        `https://fcm.googleapis.com/v1/projects/${this.PROJECT_ID}/messages:send`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            message: {
+              tokens: tokens,
+              notification: {
+                title: payload.title,
+                body: payload.body,
+              },
+              data: payload.data || {},
+            },
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`FCM Batch API Error: ${JSON.stringify(error)}`);
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error("Failed to send batch notifications:", error);
+      throw error;
+    }
+  }
 }
 
 // 싱글톤 인스턴스 생성

@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import { apiResponse, errorResponse } from "@/lib/api";
+import { notificationService } from "@/lib/services/notification";
 
 export async function GET() {
   try {
@@ -22,6 +23,8 @@ export async function GET() {
       },
     });
 
+    let selectedQuiz = quiz;
+
     if (!quiz) {
       // 모든 퀴즈가 이미 노출되었다면 showedAt을 모두 null로 초기화
       await prisma.quiz.updateMany({
@@ -41,22 +44,50 @@ export async function GET() {
         return errorResponse("No quiz available", 404);
       }
 
-      // 선택된 퀴즈의 showedAt 업데이트
-      await prisma.quiz.update({
-        where: { id: resetQuiz.id },
-        data: { showedAt: new Date() },
-      });
+      selectedQuiz = resetQuiz;
+    }
 
-      return apiResponse({ quiz: resetQuiz });
+    if (!selectedQuiz) {
+      return errorResponse("No quiz available", 404);
     }
 
     // 선택된 퀴즈의 showedAt 업데이트
     await prisma.quiz.update({
-      where: { id: quiz.id },
+      where: { id: selectedQuiz.id },
       data: { showedAt: new Date() },
     });
 
-    return apiResponse({ quiz });
+    // 알림이 활성화된 모든 사용자 조회
+    const usersWithNotification = await prisma.user.findMany({
+      where: {
+        notification: {
+          isEnabled: true,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    // 모든 사용자에게 한 번에 알림 전송
+    try {
+      await notificationService.sendToMultipleUsers(
+        usersWithNotification.map((user) => user.id),
+        {
+          title: "오늘의 퀴즈",
+          body: "오늘의 퀴즈가 도착했습니다. 지금 확인해보세요!",
+          data: {
+            type: "daily-quiz",
+            quizId: selectedQuiz.id,
+            timestamp: new Date().toISOString(),
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Failed to send notifications:", error);
+    }
+
+    return apiResponse({ quiz: selectedQuiz });
   } catch (error) {
     console.error("Daily Quiz Cron Error:", error);
     return errorResponse("서버 오류가 발생했습니다.", 500);
