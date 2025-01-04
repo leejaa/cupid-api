@@ -15,16 +15,25 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  phone         String   @unique
+  id            String        @id @default(cuid())
+  phone         String        @unique
   name          String?
-  isRegistered  Boolean  @default(false)
-  fcmToken      String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  givenLikes    Like[]   @relation("FromUser")
-  receivedLikes Like[]   @relation("ToUser")
-  friends       Friend[] @relation("UserFriends")
+  isRegistered  Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  givenLikes    Like[]        @relation("FromUser")
+  receivedLikes Like[]        @relation("ToUser")
+  notification  Notification?
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  token     String
+  isEnabled Boolean  @default(true)
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Like {
@@ -37,18 +46,4 @@ model Like {
   deletedAt DateTime?
 
   @@unique([fromId, toId, createdAt])
-}
-
-model Friend {
-  id        String   @id @default(cuid())
-  name      String
-  phone     String
-  isLiked   Boolean  @default(false)
-  isInvited Boolean  @default(false)
-  user      User     @relation("UserFriends", fields: [userId], references: [id])
-  userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([userId, phone], name: "userId_phone")
 }

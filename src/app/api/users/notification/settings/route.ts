@@ -1,4 +1,3 @@
-// src/app/api/users/fcm-token/route.ts
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
@@ -13,20 +12,23 @@ export async function POST(req: Request) {
     }
 
     const payload = await verifyToken(token);
-    const { fcmToken } = await req.json();
+    const { isEnabled } = await req.json();
 
-    if (!fcmToken) {
-      return errorResponse("FCM 토큰이 필요합니다.", 400);
+    if (typeof isEnabled !== "boolean") {
+      return errorResponse("알림 설정 값이 필요합니다.", 400);
     }
 
-    await prisma.user.update({
-      where: { id: payload.userId },
-      data: { fcmToken },
+    await prisma.notification.update({
+      where: { userId: payload.userId },
+      data: {
+        isEnabled,
+        updatedAt: new Date(),
+      },
     });
 
     return apiResponse({ success: true });
   } catch (error) {
-    console.error("FCM Token Update Error:", error);
+    console.error("Notification Settings Update Error:", error);
     return errorResponse("서버 오류가 발생했습니다.", 500);
   }
 }
