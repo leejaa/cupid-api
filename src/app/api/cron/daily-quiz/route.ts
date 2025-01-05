@@ -80,6 +80,7 @@ export async function GET() {
             type: "daily-quiz",
             quizId: selectedQuiz.id,
             timestamp: new Date().toISOString(),
+            route: "/quiz",
           },
         }
       );
