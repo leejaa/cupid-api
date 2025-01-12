@@ -1,7 +1,6 @@
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import { apiResponse, errorResponse } from "@/lib/api";
-import { startOfDay, endOfDay } from "date-fns";
 import { verifyToken } from "@/lib/auth";
 
 export async function GET() {
@@ -14,15 +13,15 @@ export async function GET() {
 
     const payload = await verifyToken(token);
 
-    const today = new Date();
-
-    // 오늘 날짜의 퀴즈 조회
+    // 가장 최근에 보여진 퀴즈 조회
     const quiz = await prisma.quiz.findFirst({
       where: {
         showedAt: {
-          gte: startOfDay(today),
-          lte: endOfDay(today),
+          not: null,
         },
+      },
+      orderBy: {
+        showedAt: "desc",
       },
     });
 
