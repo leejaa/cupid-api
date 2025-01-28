@@ -1,0 +1,121 @@
+# In My Heart 앱 문구 모음
+
+## 1. 시작 화면 (Welcome)
+- In my ❤️
+  - In my ❤️
+- 당신의 설렘이 시작되는 곳 💕
+  - Where your heart flutters 💕
+
+## 2. 인증 (Authentication)
+- 환영합니다!
+  - Welcome!
+- 휴대폰 번호로 간편하게 시작하세요
+  - Start easily with your phone number
+- 인증번호가 발송되었습니다
+  - Verification code has been sent
+- 전화번호 다시 입력
+  - Re-enter phone number
+- 인증번호 발송
+  - Send verification code
+- 인증이 필요합니다
+  - Authentication required
+- 인증 코드 전송에 실패했습니다
+  - Failed to send verification code
+- 인증 코드 확인에 실패했습니다
+  - Failed to verify code
+- 인증 코드가 전송되었습니다
+  - Verification code has been sent
+- 잘못된 인증번호입니다
+  - Invalid verification code
+- 인증이 완료되었습니다
+  - Authentication completed
+- 인증번호는 6자리여야 합니다
+  - Verification code must be 6 digits
+
+## 3. 알림 (Notifications)
+- FCM 토큰이 필요합니다
+  - FCM token required
+- 알림을 보낼 수 없는 사용자입니다
+  - Unable to send notifications to user
+- 알림 전송 중 오류가 발생했습니다
+  - Error occurred while sending notification
+- 알림 설정 값이 필요합니다
+  - Notification settings required
+- 테스트 알림
+  - Test notification
+- 안녕하세요! FCM 알림 테스트입니다
+  - Hello! This is a FCM notification test
+- 새로운 호감 표시
+  - New like notification
+- 누군가가 회원님에게 호감을 표시했습니다
+  - Someone has shown interest in you
+
+## 4. 퀴즈 (Quiz)
+- 오늘의 퀴즈
+  - Today's quiz
+- 오늘의 퀴즈가 아직 없습니다
+  - No quiz available today
+- 존재하지 않는 퀴즈입니다
+  - Quiz does not exist
+- 이미 답변한 퀴즈입니다
+  - You have already answered this quiz
+
+## 5. 사용자 관리 (User Management)
+- 전화번호 목록이 필요합니다
+  - Phone number list required
+- 전화번호가 필요합니다
+  - Phone number required
+- 사용자를 찾을 수 없습니다
+  - User not found
+- 필수 정보가 누락되었습니다
+  - Required information missing
+
+## 6. 좋아요 (Likes)
+- 자기 자신에게 좋아요를 할 수 없습니다
+  - Cannot like yourself
+- 24시간 이내에 이미 다른 사용자에게 좋아요를 했습니다
+  - You have already liked another user within 24 hours
+- 자기 자신을 선택할 수 없습니다
+  - Cannot select yourself
+
+## 7. 시스템 메시지 (System Messages)
+- 서버 오류가 발생했습니다
+  - Server error occurred
+- Firebase 설정이 누락되었습니다
+  - Firebase configuration is missing
+
+## 8. 로그 메시지 (Log Messages)
+- 인증 코드 전송 오류
+  - Error sending verification code
+- 인증 코드 확인 오류
+  - Error verifying code
+- 인증 코드 전송 실패
+  - Failed to send verification code
+- 인증 코드 확인 실패
+  - Failed to verify code
+- 사용자 생성
+  - Create user
+- 사용자 업데이트
+  - Update user
+
+## 9. API 오류 (API Errors)
+- FCM API 오류
+  - FCM API Error
+- 테스트 알림 오류
+  - Test Notification Error
+- 좋아요 API 오류
+  - Like API Error
+- 퀴즈 답변 API 오류
+  - Quiz Answer API Error
+- 알림 설정 업데이트 오류
+  - Notification Settings Update Error
+- 일일 퀴즈 크론 오류
+  - Daily Quiz Cron Error
+- 오늘의 퀴즈 API 오류
+  - Today's Quiz API Error
+- 사용자 확인 API 오류
+  - Users Check API Error
+- FCM 토큰 업데이트 오류
+  - FCM Token Update Error
+- 좋아요한 사용자 API 오류
+  - Liked User API Error 
